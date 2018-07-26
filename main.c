@@ -428,15 +428,12 @@ void ocb_encrypt(const unsigned char key[__restrict 32], const unsigned char non
       l[i][k] = l[i - 1][k];
     double_arr(l[i]);
   }
-  unsigned char nonce_final[16] = {0};
+  unsigned char offset[24] = {0};
   int index = 15 - nonce_length;
-  nonce_final[index++] |= 1;
+  offset[index++] |= 1;
   for (unsigned int i = 0; i < nonce_length; index++, i++)
-    nonce_final[index] = nonce[i];
-  unsigned int bottom = nonce_final[15] % 64;
-  unsigned char offset[24];
-  for (int i = 0; i < 16; i++)
-    offset[i] = nonce_final[i];
+    offset[index] = nonce[i];
+  unsigned int bottom = offset[15] % 64;
   offset[15] ^= bottom;
   cipher(offset, round_key);
   for (int i = 0; i < 8; i++)
@@ -516,15 +513,12 @@ int ocb_decrypt(const unsigned char key[__restrict 32], const unsigned char nonc
       l[i][k] = l[i - 1][k];
     double_arr(l[i]);
   }
-  unsigned char nonce_final[16] = {0};
+  unsigned char offset[24] = {0};
   int index = 15 - nonce_length;
-  nonce_final[index++] |= 1;
+  offset[index++] |= 1;
   for (unsigned int i = 0; i < nonce_length; index++, i++)
-    nonce_final[index] = nonce[i];
-  unsigned int bottom = nonce_final[15] % 64;
-  unsigned char offset[24];
-  for (int i = 0; i < 16; i++)
-    offset[i] = nonce_final[i];
+    offset[index] = nonce[i];
+  unsigned int bottom = offset[15] % 64;
   offset[15] ^= bottom;
   cipher(offset, round_key);
   for (int i = 0; i < 8; i++)
@@ -580,12 +574,12 @@ int ocb_decrypt(const unsigned char key[__restrict 32], const unsigned char nonc
   cipher(checksum, round_key);
   hash(key, associated_data, associated_data_length, offset);
   xor_16(checksum, offset);
-  unsigned int diff = 0;
+  unsigned char diff = 0;
   for (unsigned int i = 0; i < 16; i++)
     diff ^= checksum[i];
   for (unsigned int i = 0; i < 16; i++)
     diff ^= encrypted[encrypted_length + i];
-  return diff;
+  return (unsigned int) diff;
 }
 
 /*
