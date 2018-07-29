@@ -491,7 +491,7 @@ void ocb_encrypt(const unsigned char key[__restrict 32], const unsigned char non
 int ocb_decrypt(const unsigned char key[__restrict 32], const unsigned char nonce[__restrict 15], unsigned int nonce_length,
   const unsigned char *__restrict encrypted, unsigned int encrypted_length, const unsigned char *__restrict associated_data,
   int associated_data_length, unsigned char *__restrict out) {
-  const  int m = encrypted_length / 16;
+  const int m = encrypted_length / 16;
   const unsigned int l_length = ntz_round(m) + 1;
   unsigned char l[l_length][16];
   unsigned char l_asterisk[16] = {0};
