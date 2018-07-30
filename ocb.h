@@ -36,7 +36,7 @@ void ocb_encrypt(const unsigned char key[32], const unsigned char nonce[15], uns
  */
 int ocb_decrypt(const unsigned char key[32], const unsigned char nonce[15], unsigned int nonce_length,
   const unsigned char *encrypted, unsigned int encrypted_length, const unsigned char *associated_data,
-  int associated_data_length, unsigned char *out)
+  int associated_data_length, unsigned char *out);
 
 #ifdef __cplusplus
 }
