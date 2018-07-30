@@ -391,9 +391,9 @@ static void hash(const unsigned char key[__restrict 32], const unsigned char *__
     xor_16(offset, l_asterisk);
     for (unsigned int i = 0; i < a_asterisk_length; i++)
       cipher_temp[i] = associated_data[full_block_length + i];
-    cipher_temp[full_block_length + a_asterisk_length] = 0x80;
+    cipher_temp[a_asterisk_length] = 0x80;
     for (int i = a_asterisk_length + 1; i < 16; i++)
-      cipher_temp[full_block_length + i] = 0;
+      cipher_temp[i] = 0;
     xor_16(cipher_temp, offset);
     cipher(cipher_temp, round_key);
     xor_16(out, cipher_temp);
