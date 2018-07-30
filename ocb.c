@@ -345,7 +345,7 @@ static inline void xor_16(unsigned char * __restrict a, const unsigned char * __
     a[i] ^= b[i];
 }
 
-static void hash(const unsigned char key[__restrict 32], const unsigned char *__restrict associated_data,
+static void hash(const unsigned char round_key[__restrict 240], const unsigned char *__restrict associated_data,
   unsigned int associated_data_length, unsigned char out[__restrict 16]) {
   for (int i = 0; i < 16; i++)
     out[i] = 0;
@@ -357,8 +357,6 @@ static void hash(const unsigned char key[__restrict 32], const unsigned char *__
   const unsigned int l_length = ntz_round(m) + 1;
   unsigned char l[l_length][16];
   unsigned char l_asterisk[16] = {0};
-  unsigned char round_key[240];
-  key_expansion(round_key, key);
 
   cipher(l_asterisk, round_key);
   // L_* ^^
@@ -479,7 +477,7 @@ void ocb_encrypt(const unsigned char key[__restrict 32], const unsigned char non
   xor_16(checksum, offset);
   xor_16(checksum, l_dollar);
   cipher(checksum, round_key);
-  hash(key, associated_data, associated_data_length, offset);
+  hash(round_key, associated_data, associated_data_length, offset);
   xor_16(checksum, offset);
   for (int i = 0; i < 16; i++)
     out[full_block_length + p_asterisk_length + i] = checksum[i];
@@ -569,7 +567,7 @@ int ocb_decrypt(const unsigned char key[__restrict 32], const unsigned char nonc
   xor_16(checksum, offset);
   xor_16(checksum, l_dollar);
   cipher(checksum, round_key);
-  hash(key, associated_data, associated_data_length, offset);
+  hash(round_key, associated_data, associated_data_length, offset);
   xor_16(checksum, offset);
   unsigned char diff = 0;
   for (unsigned int i = 0; i < 16; i++)
