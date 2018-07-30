@@ -347,12 +347,11 @@ static inline void xor_16(unsigned char * __restrict a, const unsigned char * __
 
 static void hash(const unsigned char key[__restrict 32], const unsigned char *__restrict associated_data,
   unsigned int associated_data_length, unsigned char out[__restrict 16]) {
+  for (int i = 0; i < 16; i++)
+    out[i] = 0;
 #ifdef ASSOCIATED_DATA_SHORTCUT
-  if (!associated_data_length) {
-    for (int i = 0; i < 16; i++)
-      out[i] = 0;
+  if (!associated_data_length)
     return;
-  }
 #endif
   const int m = associated_data_length / 16;
   const unsigned int l_length = ntz_round(m) + 1;
@@ -374,8 +373,6 @@ static void hash(const unsigned char key[__restrict 32], const unsigned char *__
     double_arr(l[i]);
   }
 
-  for (int i = 0; i < 16; i++)
-    out[i] = 0;
   unsigned char offset[16] = {0};
   unsigned char cipher_temp[16];
 
@@ -389,7 +386,7 @@ static void hash(const unsigned char key[__restrict 32], const unsigned char *__
   }
 
   const unsigned int a_asterisk_length = (unsigned int) (associated_data_length % 16);
-  const unsigned int const a_asterisk_loc = associated_data_length - a_asterisk_length;
+  const unsigned int a_asterisk_loc = associated_data_length - a_asterisk_length;
   if (a_asterisk_length > 0) {
     xor_16(offset, l_asterisk);
     for (unsigned int i = 0; i < a_asterisk_length; i++)
@@ -464,7 +461,7 @@ void ocb_encrypt(const unsigned char key[__restrict 32], const unsigned char non
   const unsigned int full_block_length = message_length ^ p_asterisk_length;
   unsigned char checksum[16] = {0};
 
-  for (int i = 0; i < full_block_length; i++)
+  for (unsigned int i = 0; i < full_block_length; i++)
     checksum[i % 16] ^= message[i];
 
   if (p_asterisk_length > 0) {
@@ -550,7 +547,7 @@ int ocb_decrypt(const unsigned char key[__restrict 32], const unsigned char nonc
 
   unsigned char checksum[16] = {0};
 
-  for (int i = 0; i < full_block_length; i++)
+  for (unsigned int i = 0; i < full_block_length; i++)
     checksum[i % 16] ^= out[i];
 
   if (c_asterisk_length > 0) {
