@@ -13,8 +13,6 @@
 // Cipher functions are taken from (Public domain)
 // https://github.com/kokke/tiny-AES-c/blob/master/aes.c
 
-#define ASSOCIATED_DATA_SHORTCUT
-
 #ifdef __GNUC__
 #define USE_BUILTIN
 #define ntz(a) __builtin_ctz((unsigned int) a)
@@ -346,17 +344,15 @@ static inline void xor_16(unsigned char * __restrict a, const unsigned char * __
 }
 
 static void hash(const unsigned char round_key[__restrict 240], const unsigned char *__restrict associated_data,
-  unsigned int associated_data_length, const unsigned char l[][16], const unsigned char l_asterisk[16], unsigned char out[__restrict 16]) {
-  for (int i = 0; i < 16; i++)
-    out[i] = 0;
-#ifdef ASSOCIATED_DATA_SHORTCUT
-  if (!associated_data_length)
-    return;
-#endif
+  unsigned int associated_data_length, const unsigned char l[__restrict][16],
+  const unsigned char l_asterisk[__restrict 16], unsigned char out[__restrict 16]) {
   const int m = associated_data_length / 16;
 
   unsigned char offset[16] = {0};
   unsigned char cipher_temp[16];
+
+  for (int i = 0; i < 16; i++)
+    out[i] = 0;
 
   for (int i = 0; i < m; i++) {
     for (int k = 0; k < 16; k++)
@@ -566,27 +562,3 @@ int ocb_decrypt(const unsigned char key[__restrict 32], const unsigned char nonc
     diff ^= encrypted[encrypted_length + i];
   return (unsigned int) diff;
 }
-
-/*
-#include <stdio.h>
-int main(void) {
-  const unsigned char key[32] = {1,68,34,92,13,5,1,68,34,92,13,5,1,68,34,92,13,5,1,68,34,92,13,5,1,68,34,92,13,5,1,68};
-  const unsigned char data[72] = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,
-    19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,
-    47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66
-  };
-  const unsigned char nonce[12] = {7,8,4,170,2,8,3,5,6,8,99,170};
-  unsigned char out[72 + 16] = {0};
-  unsigned char final[72] = {0};
-  ocb_encrypt(key, nonce, 12, data, 72, NULL, 0, out);
-  for (int i = 0; i < 72 + 16; i++)
-    printf("%u, ", out[i]);
-  printf("\n\n");
-  if (ocb_decrypt(key, nonce, 12, out, 72, NULL, 0, final))
-    return 0;
-  for (int i = 0; i < 72; i++)
-    printf("%u, ", final[i]);
-  printf("\n");
-  return 0;
-}
-*/
