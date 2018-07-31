@@ -346,7 +346,7 @@ static inline void xor_16(unsigned char * __restrict a, const unsigned char * __
 static void hash(const unsigned char round_key[__restrict 240], const unsigned char *__restrict associated_data,
   unsigned int associated_data_length, const unsigned char l[__restrict][16],
   const unsigned char l_asterisk[__restrict 16], unsigned char out[__restrict 16]) {
-  const int m = associated_data_length / 16;
+  const unsigned int m = associated_data_length / 16;
 
   unsigned char offset[16] = {0};
   unsigned char cipher_temp[16];
@@ -381,7 +381,7 @@ static void hash(const unsigned char round_key[__restrict 240], const unsigned c
 void ocb_encrypt(const unsigned char key[__restrict 32], const unsigned char nonce[__restrict 15], unsigned int nonce_length,
   const unsigned char *__restrict message, unsigned int message_length, const unsigned char *__restrict associated_data,
   int associated_data_length, unsigned char *out) {
-  const int m = message_length / 16;
+  const unsigned int m = message_length / 16;
   const unsigned int l_length =
     (message_length > associated_data_length) ?
     (ntz_round(m) + 1) :
@@ -469,7 +469,7 @@ void ocb_encrypt(const unsigned char key[__restrict 32], const unsigned char non
 int ocb_decrypt(const unsigned char key[__restrict 32], const unsigned char nonce[__restrict 15], unsigned int nonce_length,
   const unsigned char *__restrict encrypted, unsigned int encrypted_length, const unsigned char *__restrict associated_data,
   int associated_data_length, unsigned char *__restrict out) {
-  const int m = encrypted_length / 16;
+  const unsigned int m = encrypted_length / 16;
   const unsigned int l_length =
     (encrypted_length > associated_data_length) ?
     (ntz_round(m) + 1) :
