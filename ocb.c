@@ -311,7 +311,7 @@ static void key_expansion(unsigned char* __restrict round_key, const unsigned ch
 static void double_arr(unsigned char s[16]) {
   const unsigned char first_bit = -(s[0] >> 7);
   for (int i = 0; i < 15; i++) {
-    s[i] &= 127; // ~(1 << 7)
+    s[i] &= 127;
     s[i] <<= 1;
     s[i] |= s[i+1] >> 7;
   }
@@ -515,7 +515,6 @@ int ocb_decrypt(const unsigned char key[__restrict 32], const unsigned char nonc
   const unsigned int c_asterisk_length = (unsigned int) (encrypted_length % 16);
   const unsigned int full_block_length = encrypted_length ^ c_asterisk_length;
 
-
 #ifdef __GNUC__
   __builtin_memcpy(out, encrypted, full_block_length);
 #else
@@ -556,9 +555,8 @@ int ocb_decrypt(const unsigned char key[__restrict 32], const unsigned char nonc
   hash(round_key, associated_data, associated_data_length, l, l_asterisk, offset);
   xor_16(checksum, offset);
   unsigned char diff = 0;
+  xor_16(checksum, &encrypted[encrypted_length]);
   for (unsigned int i = 0; i < 16; i++)
-    diff ^= checksum[i];
-  for (unsigned int i = 0; i < 16; i++)
-    diff ^= encrypted[encrypted_length + i];
+    diff |= checksum[i];
   return (unsigned int) diff;
 }
