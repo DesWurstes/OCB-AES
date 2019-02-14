@@ -38,3 +38,9 @@ plaintext while encrypting. Your friend will need the know the associated data t
 If decoding succeeds, your friend will be sure that your associated data was untampered. (under some assumptions)
 
 Furthermore, the associated data does not make the ciphertext longer.
+
+If you don't use associated data, defining `OCB_NO_AD` will decrease the code size.
+
+If the nonce length is constant, defining `OCB_CONST_NONCE` equal to the nonce length (max 15) will decrease the code size.
+
+In above cases, the function parameters change. The header file can no longer guide you.

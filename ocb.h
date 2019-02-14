@@ -1,3 +1,6 @@
+#ifndef OCB_H
+#define OCB_H
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -42,4 +45,6 @@ static int ocb_decrypt(const unsigned char key[32], const unsigned char nonce[15
 
 #ifdef __cplusplus
 }
+#endif
+
 #endif

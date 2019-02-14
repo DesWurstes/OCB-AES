@@ -25,6 +25,20 @@ for (int _i = 0; _i < (c); _i++) \
   a[_i] = b[_i];
 #endif
 
+#ifdef OCB_CONST_NONCE
+#define OCB_NONCEPARAM
+#define nonce_length OCB_CONST_NONCE
+#else
+#define OCB_NONCEPARAM unsigned int nonce_length,
+#endif
+
+#ifdef OCB_NO_AD
+#define OCB_ADPARAM
+#define associated_data_length 0
+#else
+#define OCB_ADPARAM const unsigned char *__restrict associated_data, int associated_data_length,
+#endif
+
 static const unsigned char sbox[256] = {
   //0     1     2     3     4     5     6     7     8     9     A     B     C     D     E     F
   0x63, 0x7c, 0x77, 0x7b, 0xf2, 0x6b, 0x6f, 0xc5, 0x30, 0x01, 0x67, 0x2b, 0xfe, 0xd7, 0xab, 0x76,
@@ -343,9 +357,10 @@ static inline void xor_16(unsigned char * __restrict a, const unsigned char * __
     a[i] ^= b[i];
 }
 
-static void hash(const unsigned char round_key[__restrict 240], const unsigned char *__restrict associated_data,
-  unsigned int associated_data_length, const unsigned char l[__restrict][16],
-  const unsigned char l_asterisk[__restrict 16], unsigned char out[__restrict 16]) {
+#ifndef OCB_NO_AD
+static void hash(const unsigned char round_key[__restrict 240], OCB_ADPARAM
+  const unsigned char l[__restrict][16], const unsigned char l_asterisk[__restrict 16],
+  unsigned char out[__restrict 16]) {
   const unsigned int m = associated_data_length / 16;
 
   unsigned char offset[16] = {0};
@@ -377,10 +392,10 @@ static void hash(const unsigned char round_key[__restrict 240], const unsigned c
     xor_16(out, cipher_temp);
   }
 }
+#endif
 
-static void ocb_encrypt(const unsigned char key[__restrict 32], const unsigned char nonce[__restrict 15], unsigned int nonce_length,
-  const unsigned char *__restrict message, unsigned int message_length, const unsigned char *__restrict associated_data,
-  int associated_data_length, unsigned char *out) {
+static void ocb_encrypt(const unsigned char key[__restrict 32], const unsigned char nonce[__restrict], OCB_NONCEPARAM
+  const unsigned char *__restrict message, unsigned int message_length, OCB_ADPARAM unsigned char *out) {
   const unsigned int m = message_length / 16;
   const unsigned int l_length =
     (message_length > associated_data_length) ?
@@ -455,15 +470,17 @@ static void ocb_encrypt(const unsigned char key[__restrict 32], const unsigned c
   xor_16(checksum, offset);
   xor_16(checksum, l_dollar);
   cipher(checksum, round_key);
+#ifndef OCB_NO_AD
   hash(round_key, associated_data, associated_data_length, l, l_asterisk, offset);
   xor_16(checksum, offset);
+#endif
   for (int i = 0; i < 16; i++)
     out[full_block_length + p_asterisk_length + i] = checksum[i];
 }
 
-static int ocb_decrypt(const unsigned char key[__restrict 32], const unsigned char nonce[__restrict 15], unsigned int nonce_length,
-  const unsigned char *__restrict encrypted, unsigned int encrypted_length, const unsigned char *__restrict associated_data,
-  int associated_data_length, unsigned char *__restrict out) {
+static int ocb_decrypt(const unsigned char key[__restrict 32], const unsigned char nonce[__restrict], OCB_NONCEPARAM
+  const unsigned char *__restrict encrypted, unsigned int encrypted_length, OCB_ADPARAM
+  unsigned char *__restrict out) {
   const unsigned int m = encrypted_length / 16;
   const unsigned int l_length =
     (encrypted_length > associated_data_length) ?
@@ -543,9 +560,11 @@ static int ocb_decrypt(const unsigned char key[__restrict 32], const unsigned ch
   xor_16(checksum, offset);
   xor_16(checksum, l_dollar);
   cipher(checksum, round_key);
+#ifndef OCB_NO_AD
   hash(round_key, associated_data, associated_data_length, l, l_asterisk, offset);
   xor_16(checksum, offset);
   unsigned char diff = 0;
+#endif
   xor_16(checksum, &encrypted[encrypted_length]);
   for (unsigned int i = 0; i < 16; i++)
     diff |= checksum[i];
@@ -554,7 +573,16 @@ static int ocb_decrypt(const unsigned char key[__restrict 32], const unsigned ch
 
 #ifdef __GNUC__
 #undef USE_BUILTIN
+#undef OCB_NONCEPARAM
 #undef ocb_ntz
 #undef ocb_ntz_round
 #undef ocb_memcpy
+#endif
+
+#ifdef OCB_CONST_NONCE
+#undef OCB_CONST_NONCE
+#endif
+
+#ifdef associated_data_length
+#undef associated_data_length
 #endif
