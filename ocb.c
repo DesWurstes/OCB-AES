@@ -36,7 +36,7 @@ for (int _i = 0; _i < (c); _i++) \
 #define OCB_ADPARAM
 #define associated_data_length 0
 #else
-#define OCB_ADPARAM const unsigned char *__restrict associated_data, int associated_data_length,
+#define OCB_ADPARAM const unsigned char * __restrict associated_data, int associated_data_length,
 #endif
 
 static const unsigned char sbox[256] = {
@@ -252,7 +252,7 @@ static void decipher(unsigned char state[16], const unsigned char * __restrict r
   add_round_key(0, state, round_key);
 }
 
-static void key_expansion(unsigned char* __restrict round_key, const unsigned char* __restrict key)
+static void key_expansion(unsigned char * __restrict round_key, const unsigned char * __restrict key)
 {
   unsigned i, j, k;
   unsigned char tempa[4]; // Used for the column/row operations
@@ -358,9 +358,9 @@ static inline void xor_16(unsigned char * __restrict a, const unsigned char * __
 }
 
 #ifndef OCB_NO_AD
-static void hash(const unsigned char round_key[__restrict 240], OCB_ADPARAM
-  const unsigned char l[__restrict][16], const unsigned char l_asterisk[__restrict 16],
-  unsigned char out[__restrict 16]) {
+static void hash(const unsigned char * __restrict round_key, OCB_ADPARAM
+  const unsigned char l[][16], const unsigned char * __restrict l_asterisk,
+  unsigned char * __restrict out) {
   const unsigned int m = associated_data_length / 16;
 
   unsigned char offset[16] = {0};
@@ -394,8 +394,8 @@ static void hash(const unsigned char round_key[__restrict 240], OCB_ADPARAM
 }
 #endif
 
-static void ocb_encrypt(const unsigned char key[__restrict 32], const unsigned char nonce[__restrict], OCB_NONCEPARAM
-  const unsigned char *__restrict message, unsigned int message_length, OCB_ADPARAM unsigned char *out) {
+static void ocb_encrypt(const unsigned char * __restrict key, const unsigned char * __restrict nonce, OCB_NONCEPARAM
+  const unsigned char * __restrict message, unsigned int message_length, OCB_ADPARAM unsigned char * out) {
   const unsigned int m = message_length / 16;
   const unsigned int l_length =
     (message_length > associated_data_length) ?
@@ -478,9 +478,9 @@ static void ocb_encrypt(const unsigned char key[__restrict 32], const unsigned c
     out[full_block_length + p_asterisk_length + i] = checksum[i];
 }
 
-static int ocb_decrypt(const unsigned char key[__restrict 32], const unsigned char nonce[__restrict], OCB_NONCEPARAM
-  const unsigned char *__restrict encrypted, unsigned int encrypted_length, OCB_ADPARAM
-  unsigned char *__restrict out) {
+static int ocb_decrypt(const unsigned char * __restrict key, const unsigned char * __restrict nonce, OCB_NONCEPARAM
+  const unsigned char * __restrict encrypted, unsigned int encrypted_length, OCB_ADPARAM
+  unsigned char * __restrict out) {
   const unsigned int m = encrypted_length / 16;
   const unsigned int l_length =
     (encrypted_length > associated_data_length) ?
@@ -563,9 +563,9 @@ static int ocb_decrypt(const unsigned char key[__restrict 32], const unsigned ch
 #ifndef OCB_NO_AD
   hash(round_key, associated_data, associated_data_length, l, l_asterisk, offset);
   xor_16(checksum, offset);
-  unsigned char diff = 0;
 #endif
   xor_16(checksum, &encrypted[encrypted_length]);
+  unsigned char diff = 0;
   for (unsigned int i = 0; i < 16; i++)
     diff |= checksum[i];
   return (unsigned int) diff;
