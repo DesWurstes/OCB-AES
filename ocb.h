@@ -5,6 +5,8 @@
 extern "C" {
 #endif
 
+#if !defined(OCB_NO_AD) && !defined(OCB_CONST_NONCE)
+
 /**
  * Encrypts a message with associated data.
  * @param key                    256 bit encryption key.
@@ -40,6 +42,8 @@ static void ocb_encrypt(const unsigned char key[32], const unsigned char nonce[1
 static int ocb_decrypt(const unsigned char key[32], const unsigned char nonce[15], unsigned int nonce_length,
   const unsigned char *encrypted, unsigned int encrypted_length, const unsigned char *associated_data,
   int associated_data_length, unsigned char *out);
+
+#endif
 
 #include "ocb.c"
 
