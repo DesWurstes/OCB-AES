@@ -17,7 +17,12 @@
 #define USE_BUILTIN
 #define ntz(a) __builtin_ctz((unsigned int) a)
 #define ntz_round(a) \
-((a) == 0) ? 0 : (sizeof(unsigned int) * 8 - __builtin_clz((unsigned int) a) - 1)
+((a) == 0) ? 0 : (sizeof(unsigned int) * 8 - __builtin_clz((unsigned int) (a)) - 1)
+#define ocb_memcpy(a,b,c) __builtin_memcpy(a,b,c)
+#else
+#define ocb_memcpy(a,b,c) \
+for (int _i = 0; _i < (c); _i++) \
+  a[_i] = b[_i];
 #endif
 
 static const unsigned char sbox[256] = {
@@ -239,12 +244,7 @@ static void key_expansion(unsigned char* __restrict round_key, const unsigned ch
   unsigned char tempa[4]; // Used for the column/row operations
 
   // The first round key is the key itself.
-#ifdef __GNUC__
-    __builtin_memcpy(round_key, key, 32);
-#else
-    for (int i = 0; i < 32; i++)
-      round_key[i] = key[i];
-#endif
+  ocb_memcpy(round_key, key, 32);
 
   // All other round keys are found from the previous round keys.
   for (i = 8; i < 4 * (14 + 1); ++i)
@@ -424,12 +424,7 @@ void ocb_encrypt(const unsigned char key[__restrict 32], const unsigned char non
   for (int i = 0; i < 16; i++)
     offset[i] = ((offset[i + shift] << bit_shift) | (offset[i + shift + 1] >> (8 - bit_shift))) & 255;
 
-#ifdef __GNUC__
-    __builtin_memcpy(out, message, message_length);
-#else
-    for (int i = 0; i < message_length; i++)
-      out[i] = message[i];
-#endif
+  ocb_memcpy(out, message, message_length);
 
   for (int i = 0; i < m; i++) {
     xor_16(offset, l[ntz(i + 1)]);
@@ -515,12 +510,8 @@ int ocb_decrypt(const unsigned char key[__restrict 32], const unsigned char nonc
   const unsigned int c_asterisk_length = (unsigned int) (encrypted_length % 16);
   const unsigned int full_block_length = encrypted_length ^ c_asterisk_length;
 
-#ifdef __GNUC__
-  __builtin_memcpy(out, encrypted, full_block_length);
-#else
-  for (int i = 0; i < full_block_length; i++)
-    out[i] = encrypted[i];
-#endif
+  ocb_memcpy(out, encrypted, full_block_length);
+
   for (int i = 0; i < m; i++) {
     xor_16(offset, l[ntz(i + 1)]);
     xor_16(&out[i * 16], offset);
