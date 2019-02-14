@@ -15,7 +15,7 @@ extern "C" {
  * @param associated_data_length Associated Data length in bytes.
  * @param out                    output with length [message_length + 16 bytes]
  */
-void ocb_encrypt(const unsigned char key[32], const unsigned char nonce[15], unsigned int nonce_length,
+static void ocb_encrypt(const unsigned char key[32], const unsigned char nonce[15], unsigned int nonce_length,
   const unsigned char *message, unsigned int message_length, const unsigned char *associated_data,
   int associated_data_length, unsigned char *out);
 
@@ -34,9 +34,11 @@ void ocb_encrypt(const unsigned char key[32], const unsigned char nonce[15], uns
  * @param out                    output with length [encrypted_length]
  * @return                       MUST BE CHECKED. Zero if decipher succesful.
  */
-int ocb_decrypt(const unsigned char key[32], const unsigned char nonce[15], unsigned int nonce_length,
+static int ocb_decrypt(const unsigned char key[32], const unsigned char nonce[15], unsigned int nonce_length,
   const unsigned char *encrypted, unsigned int encrypted_length, const unsigned char *associated_data,
   int associated_data_length, unsigned char *out);
+
+#include "ocb.c"
 
 #ifdef __cplusplus
 }

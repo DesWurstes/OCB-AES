@@ -15,8 +15,8 @@
 
 #ifdef __GNUC__
 #define USE_BUILTIN
-#define ntz(a) __builtin_ctz((unsigned int) a)
-#define ntz_round(a) \
+#define ocb_ntz(a) __builtin_ctz((unsigned int) a)
+#define ocb_ntz_round(a) \
 ((a) == 0) ? 0 : (sizeof(unsigned int) * 8 - __builtin_clz((unsigned int) (a)) - 1)
 #define ocb_memcpy(a,b,c) __builtin_memcpy(a,b,c)
 #else
@@ -322,7 +322,7 @@ static void double_arr(unsigned char s[16]) {
 
 #ifndef USE_BUILTIN
 // largest x such that 2^x | a - n for a - n > 0
-static inline unsigned int ntz_round(unsigned int a) {
+static inline unsigned int ocb_ntz_round(unsigned int a) {
   int k = 0;
   while (a >>= 1)
     k++;
@@ -330,7 +330,7 @@ static inline unsigned int ntz_round(unsigned int a) {
 }
 
 // largest x such that 2^x | a
-static inline unsigned int ntz(unsigned int a) {
+static inline unsigned int ocb_ntz(unsigned int a) {
   int k = 0;
   while ((a % 2 == 0) && (a >>= 1))
     k++;
@@ -357,7 +357,7 @@ static void hash(const unsigned char round_key[__restrict 240], const unsigned c
   for (int i = 0; i < m; i++) {
     for (int k = 0; k < 16; k++)
       cipher_temp[k] = associated_data[i * 16 + k];
-    xor_16(offset, l[ntz(i + 1)]);
+    xor_16(offset, l[ocb_ntz(i + 1)]);
     xor_16(cipher_temp, offset);
     cipher(cipher_temp, round_key);
     xor_16(out, cipher_temp);
@@ -378,14 +378,14 @@ static void hash(const unsigned char round_key[__restrict 240], const unsigned c
   }
 }
 
-void ocb_encrypt(const unsigned char key[__restrict 32], const unsigned char nonce[__restrict 15], unsigned int nonce_length,
+static void ocb_encrypt(const unsigned char key[__restrict 32], const unsigned char nonce[__restrict 15], unsigned int nonce_length,
   const unsigned char *__restrict message, unsigned int message_length, const unsigned char *__restrict associated_data,
   int associated_data_length, unsigned char *out) {
   const unsigned int m = message_length / 16;
   const unsigned int l_length =
     (message_length > associated_data_length) ?
-    (ntz_round(m) + 1) :
-    (ntz_round(associated_data_length / 16) + 1);
+    (ocb_ntz_round(m) + 1) :
+    (ocb_ntz_round(associated_data_length / 16) + 1);
   unsigned char l[l_length][16];
   unsigned char l_asterisk[16] = {0};
   unsigned char l_dollar[16];
@@ -427,7 +427,7 @@ void ocb_encrypt(const unsigned char key[__restrict 32], const unsigned char non
   ocb_memcpy(out, message, message_length);
 
   for (int i = 0; i < m; i++) {
-    xor_16(offset, l[ntz(i + 1)]);
+    xor_16(offset, l[ocb_ntz(i + 1)]);
     xor_16(&out[i * 16], offset);
     cipher(&out[i * 16], round_key);
     xor_16(&out[i * 16], offset);
@@ -461,14 +461,14 @@ void ocb_encrypt(const unsigned char key[__restrict 32], const unsigned char non
     out[full_block_length + p_asterisk_length + i] = checksum[i];
 }
 
-int ocb_decrypt(const unsigned char key[__restrict 32], const unsigned char nonce[__restrict 15], unsigned int nonce_length,
+static int ocb_decrypt(const unsigned char key[__restrict 32], const unsigned char nonce[__restrict 15], unsigned int nonce_length,
   const unsigned char *__restrict encrypted, unsigned int encrypted_length, const unsigned char *__restrict associated_data,
   int associated_data_length, unsigned char *__restrict out) {
   const unsigned int m = encrypted_length / 16;
   const unsigned int l_length =
     (encrypted_length > associated_data_length) ?
-    (ntz_round(m) + 1) :
-    (ntz_round(associated_data_length / 16) + 1);
+    (ocb_ntz_round(m) + 1) :
+    (ocb_ntz_round(associated_data_length / 16) + 1);
   unsigned char l[l_length][16];
   unsigned char l_asterisk[16] = {0};
   unsigned char l_dollar[16];
@@ -513,7 +513,7 @@ int ocb_decrypt(const unsigned char key[__restrict 32], const unsigned char nonc
   ocb_memcpy(out, encrypted, full_block_length);
 
   for (int i = 0; i < m; i++) {
-    xor_16(offset, l[ntz(i + 1)]);
+    xor_16(offset, l[ocb_ntz(i + 1)]);
     xor_16(&out[i * 16], offset);
     decipher(&out[i * 16], round_key);
     xor_16(&out[i * 16], offset);
@@ -551,3 +551,10 @@ int ocb_decrypt(const unsigned char key[__restrict 32], const unsigned char nonc
     diff |= checksum[i];
   return (unsigned int) diff;
 }
+
+#ifdef __GNUC__
+#undef USE_BUILTIN
+#undef ocb_ntz
+#undef ocb_ntz_round
+#undef ocb_memcpy
+#endif

@@ -22,11 +22,13 @@ Timing-attack proof. Everything is constant time, as long as the data length, no
 
 ~ [P. Rogaway and T. Krovetz](https://tools.ietf.org/pdf/rfc7253.pdf#20)
 
-No `#include` for simplicity
+- No `#include` for simplicity
 
-Compatible with systems where `sizeof(char) > 1`
+- Single-header
 
-Full name: `AEAD_AES_256_OCB_TAGLEN128`
+- Compatible with systems where `sizeof(char) > 1`
+
+- Full name: `AEAD_AES_256_OCB_TAGLEN128`
 
 ### What is Associated Data?
 
