@@ -579,10 +579,6 @@ static int ocb_decrypt(const unsigned char * __restrict key, const unsigned char
 #undef ocb_memcpy
 #endif
 
-#ifdef OCB_CONST_NONCE
-#undef OCB_CONST_NONCE
-#endif
-
-#ifdef associated_data_length
+#ifdef OCB_NO_AD
 #undef associated_data_length
 #endif
