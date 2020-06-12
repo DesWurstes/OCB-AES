@@ -161,7 +161,7 @@ static void add_round_key(unsigned char round, unsigned char state[16], const un
 
 static inline unsigned char xtime(unsigned char x)
 {
-  return ((x << 1) ^ (((x >> 7) & 1) * 0x1b));
+  return ((x << 1) ^ (((x >> 7) & 1) * 0x1b)) & 255;
 }
 
 static inline unsigned char Multiply(unsigned char x, unsigned char y) {
@@ -337,18 +337,18 @@ static void double_arr(unsigned char s[16]) {
 #ifndef USE_BUILTIN
 // largest x such that 2^x | a - n for a - n > 0
 static inline unsigned int ocb_ntz_round(unsigned int a) {
-  int k = 0;
+  unsigned int k = 0;
   while (a >>= 1)
     k++;
-  return (unsigned int) k;
+  return k;
 }
 
 // largest x such that 2^x | a
 static inline unsigned int ocb_ntz(unsigned int a) {
-  int k = 0;
+  unsigned int k = 0;
   while ((a % 2 == 0) && (a >>= 1))
     k++;
-  return (unsigned int) k;
+  return k;
 }
 #endif
 
