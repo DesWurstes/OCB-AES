@@ -1,5 +1,7 @@
 ## OCB AES
 
+**Note: The AES code is taken from tiny-aes-c and the OCB code is written by me. This project is to demonstrate the OCB code here. tiny-aes-c cannot give constant-time guarantees hence replace tiny-aes-c in this project with Intel or Arm intrinsics or another safe AES implementation or use at your own risk**
+
 This is a pure C implementation of AES. It is in [OCB 3](http://web.cs.ucdavis.edu/~rogaway/ocb/ocb-faq.htm#versions) mode, which is the **best** AES mode!
 
 Strongest parameters of the strongest algorithm: This code is only for 256 bit keys. Besides, it has TAGLEN of 128 bits.
